@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
-
+import { StoreProvider } from "@/redux/StoreProvider";
+import { Toaster } from "react-hot-toast";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -20,11 +21,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <StoreProvider>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased w-[100vw] h-[100vh] bg-[#0c0032] flex justify-center items-center`}
       >
         {children}
+        <Toaster position="top-center" reverseOrder={false} />
       </body>
+      </StoreProvider>
     </html>
   );
 }
