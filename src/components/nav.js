@@ -1,130 +1,54 @@
+'use client';
 import React, { useState } from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
+import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import MenuIcon from '@mui/icons-material/Menu';
 
 const Navbar = () => {
-  const [anchorElNav, setAnchorElNav] = useState(null);
+  const router = useRouter();
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
+  const handleNavigation = (path) => {
+    router.push(path);
+    setAnchorEl(null); // Close menu after navigation
   };
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
   };
 
   return (
-    <AppBar position="static">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          {/* Logo for desktop */}
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            href="/"
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontWeight: 700,
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            LOGO
-          </Typography>
+    <AppBar position="static" className="bg-blue-800">
+      <Toolbar className="flex justify-between items-center">
+        <Typography variant="h6" className="text-white cursor-pointer" onClick={() => handleNavigation('/')}>
+          My Application
+        </Typography>
+        
+        <div className="hidden md:flex space-x-4">
+          <Button color="inherit" onClick={() => handleNavigation('/')}>Home</Button>
+          <Button color="inherit" onClick={() => handleNavigation('/about')}>About</Button>
+          <Button color="inherit" onClick={() => handleNavigation('/questions')}>Questions</Button>
+        </div>
 
-          {/* Menu icon for mobile */}
-          <IconButton
-            size="large"
-            aria-label="menu"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={handleOpenNavMenu}
-            color="inherit"
-            sx={{ display: { xs: 'flex', md: 'none' } }}
-          >
+        <div className="md:hidden">
+          <IconButton color="inherit" onClick={handleMenuClick}>
             <MenuIcon />
           </IconButton>
-
-          {/* Links for desktop view */}
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            href="/"
-            sx={{
-              flexGrow: 1,
-              display: { xs: 'flex', md: 'none' },
-              fontWeight: 700,
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            LOGO
-          </Typography>
           <Menu
-            id="menu-appbar"
-            anchorEl={anchorElNav}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            open={Boolean(anchorElNav)}
-            onClose={handleCloseNavMenu}
-            sx={{
-              display: { xs: 'block', md: 'none' },
-            }}
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
           >
-            <MenuItem onClick={handleCloseNavMenu}>
-              <Typography textAlign="center">Home</Typography>
-            </MenuItem>
-            <MenuItem onClick={handleCloseNavMenu}>
-              <Typography textAlign="center">About</Typography>
-            </MenuItem>
-            <MenuItem onClick={handleCloseNavMenu}>
-              <Typography textAlign="center">Contact</Typography>
-            </MenuItem>
+            <MenuItem onClick={() => handleNavigation('/')}>Home</MenuItem>
+            <MenuItem onClick={() => handleNavigation('/about')}>About</MenuItem>
+            <MenuItem onClick={() => handleNavigation('/questions')}>Questions</MenuItem>
           </Menu>
-
-          {/* Links for desktop */}
-          <div style={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            <Button
-              href="#"
-              onClick={handleCloseNavMenu}
-              sx={{ my: 2, color: 'white', display: 'block' }}
-            >
-              Home
-            </Button>
-            <Button
-              href="#"
-              onClick={handleCloseNavMenu}
-              sx={{ my: 2, color: 'white', display: 'block' }}
-            >
-              About
-            </Button>
-            <Button
-              href="#"
-              onClick={handleCloseNavMenu}
-              sx={{ my: 2, color: 'white', display: 'block' }}
-            >
-              Contact
-            </Button>
-          </div>
-        </Toolbar>
-      </Container>
+        </div>
+      </Toolbar>
     </AppBar>
   );
 };

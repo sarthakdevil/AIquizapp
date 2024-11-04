@@ -29,8 +29,8 @@ export default function Home() {
   };
 
   return (
-    <>
-    {/* <Navbar/> */}
+    <div className="flex flex-col items-center justify-center">
+    <Navbar/>
       <div className="w-[100vw] h-[100vh] bg-[#0c0032] flex justify-center items-center">
         <div className="flex w-[70vw] h-[35vh] bg-slate-300 justify-center items-center rounded-md align-middle">
           {loading ? (
@@ -73,6 +73,6 @@ export default function Home() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

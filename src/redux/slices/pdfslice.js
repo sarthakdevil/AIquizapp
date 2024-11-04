@@ -10,7 +10,9 @@ export const uploadSlice = createSlice({
     error: null,
     pdfName: null,
     questionsAndAnswers: null,
+    quizTime: null, // Add quiz time to the state
     successMessage: null,
+    quiz_name: '',
   },
   reducers: {
     startUpload: (state) => {
@@ -38,17 +40,31 @@ export const uploadSlice = createSlice({
       state.pdfName = null;
       state.successMessage = null;
       state.questionsAndAnswers = null; // Reset questions and answers
+      state.quizTime = null; // Reset quiz time
     },
     setQuestionsAndAnswers: (state, action) => {
       state.questionsAndAnswers = action.payload; // Store the analyzed questions and answers
+    },
+    setQuizTime: (state, action) => {
+      state.quizTime = action.payload; // Store quiz time
+    },
+    setQuizName(state, action) { // New action for quiz name
+      state.quiz_name = action.payload;
     },
   },
 });
 
 // Export actions
-export const { startUpload, uploadSuccess, uploadFailure, resetUploadState, setQuestionsAndAnswers } = uploadSlice.actions;
+export const { 
+  startUpload, 
+  uploadSuccess, 
+  uploadFailure, 
+  resetUploadState, 
+  setQuestionsAndAnswers,
+  setQuizTime,
+  setQuizName 
+} = uploadSlice.actions;
 
-// Thunk to handle file upload
 export const uploadFile = (file) => async (dispatch) => {
   dispatch(startUpload());
   try {
@@ -56,14 +72,12 @@ export const uploadFile = (file) => async (dispatch) => {
     formData.append('pdf_file', file);
     formData.append('filename', file.name);
 
-    // Send API request and store the server response
     const response = await api.post("/upload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
 
-    // Dispatch the success action with filename and server's message
     dispatch(uploadSuccess({ filename: file.name, message: response.data.message }));
     toast.success("PDF uploaded successfully");
   } catch (error) {
@@ -72,40 +86,48 @@ export const uploadFile = (file) => async (dispatch) => {
     toast.error(errorMessage);
   }
 };
-
-// Thunk to analyze the uploaded PDF
-export const analyzePdf = (pdfName, numQuestions) => async (dispatch) => {
-  if (!pdfName) {
+export const analyzePdf = (payload) => async (dispatch) => {
+  if (!payload.pdfFilename) {
     toast.error("Please upload a PDF file first.");
     return;
   }
 
   try {
-    const formData = new FormData();
-    formData.append("pdf_filename", pdfName);
-    formData.append("num_ques", numQuestions);
+    const formdata = new FormData();
+    formdata.append("pdf_filename", payload.pdfFilename);
+    formdata.append("quiz_name", payload.quizName);
+    formdata.append("num_ques", payload.numQuestions);
+    if (payload.time) {
+      formdata.append("time", payload.time); // Append time only if it's provided
+    }
 
-    const response = await api.post("/analyze", formData, {
+    const response = await api.post("/analyze", formdata, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
-    
-    // Assuming the response has the correct data structure
+
     if (response.data && response.data.questions_and_answers) {
       dispatch(setQuestionsAndAnswers(response.data.questions_and_answers));
+      // Check and dispatch quiz time
+      if (response.data.quiz_time) {
+        dispatch(setQuizTime(response.data.quiz_time)); // Dispatch the quiz time
+      }
+      // Dispatch quiz name from the top level of the response
+      if (response.data.quiz_name) {
+        dispatch(setQuizName(response.data.quiz_name));
+      }
       toast.success("Analysis successful!");
     } else {
       throw new Error("Unexpected response structure.");
     }
 
   } catch (error) {
-    console.error("Analysis error:", error); // Log the error for debugging
+    console.error("Analysis error:", error);
     const errorMessage = error.response?.data?.message || error.message || "Analysis failed.";
-    toast.error("unexpected error");
+    toast.error(errorMessage);
   }
 };
-
 
 
 export default uploadSlice.reducer;
