@@ -24,14 +24,15 @@ const Navbar = () => {
   return (
     <AppBar position="static" className="bg-blue-800">
       <Toolbar className="flex justify-between items-center">
-        <Typography variant="h6" className="text-white cursor-pointer" onClick={() => handleNavigation('/')}>
-          My Application
+        <mark className=' bg-yellow-500 w-24 align-middle text-center rounded-md border border-dashed border-yellow-950'>
+        <Typography variant="h6" className="text-white cursor-pointer font-extrabold h" onClick={() => handleNavigation('/')}>
+          Quizify
         </Typography>
-        
+        </mark>
         <div className="hidden md:flex space-x-4">
-          <Button color="inherit" onClick={() => handleNavigation('/')}>Home</Button>
-          <Button color="inherit" onClick={() => handleNavigation('/about')}>About</Button>
-          <Button color="inherit" onClick={() => handleNavigation('/questions')}>Questions</Button>
+          <Button color="inherit" onClick={() => handleNavigation('/')}>pdfify</Button>
+          <Button color="inherit" onClick={() => handleNavigation('/create')}>create quiz</Button>
+          <Button color="inherit" onClick={() => handleNavigation('/otherquiz')}>other quizzes</Button>
         </div>
 
         <div className="md:hidden">
@@ -43,9 +44,9 @@ const Navbar = () => {
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
           >
-            <MenuItem onClick={() => handleNavigation('/')}>Home</MenuItem>
-            <MenuItem onClick={() => handleNavigation('/about')}>About</MenuItem>
-            <MenuItem onClick={() => handleNavigation('/questions')}>Questions</MenuItem>
+            <MenuItem onClick={() => handleNavigation('/')}>pdfify</MenuItem>
+            <MenuItem onClick={() => handleNavigation('/create')}>create quiz</MenuItem>
+            <MenuItem onClick={() => handleNavigation('/questions')}>other quizzes</MenuItem>
           </Menu>
         </div>
       </Toolbar>

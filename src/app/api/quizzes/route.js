@@ -1,4 +1,5 @@
 // src/app/api/questions/route.js
+import { NextResponse } from 'next/server';
 import { clientPromise } from '@/lib/mongodb'; // Adjust the path if necessary
 
 export async function GET(req) {
@@ -8,20 +9,10 @@ export async function GET(req) {
     const collection = database.collection('questions'); // Replace with your collection name
 
     const questions = await collection.find({}).toArray(); // Fetch all questions
-
-    return new Response(JSON.stringify(questions), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    console.log(questions)
+    return NextResponse.json(questions, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch questions:", error);
-    return new Response(JSON.stringify({ message: "Failed to fetch questions." }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    return NextResponse.json({ message: "Failed to fetch questions." }, { status: 500 });
   }
 }
