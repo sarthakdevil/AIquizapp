@@ -23,7 +23,6 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <StoreProvider>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased w-[100vw] h-[auto] bg-[#0c0032] flex justify-center items-center overflow-x-hidden`}
       >
         {children}
         <Toaster position="top-center" reverseOrder={false} />

@@ -1,119 +1,137 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import { useSelector } from 'react-redux';
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import Typography from "@mui/material/Typography"
+import TextField from "@mui/material/TextField"
+import Button from "@mui/material/Button"
+import { useSelector } from "react-redux"
+import { Clock, CheckCircle, AlertTriangle } from "lucide-react"
 
 export default function Questions() {
-  const router = useRouter();
-  const currentQuiz = useSelector((state) => state.question.currentQuiz);
-  const [userAnswers, setUserAnswers] = useState({});
-  const [error, setError] = useState(null);
-  const [showAnswers, setShowAnswers] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(currentQuiz?.quizTime || 0);
+  const router = useRouter()
+  const currentQuiz = useSelector((state) => state.question.currentQuiz)
+  const [userAnswers, setUserAnswers] = useState({})
+  const [error, setError] = useState(null)
+  const [showAnswers, setShowAnswers] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(currentQuiz?.quizTime || 0)
 
   useEffect(() => {
     if (!currentQuiz) {
-      router.push('/'); // Redirect to home if no quiz is selected
+      router.push("/")
     } else {
-      setTimeLeft(currentQuiz.quizTime); // Set the quiz time from the current quiz
+      setTimeLeft(currentQuiz.quizTime)
     }
 
     const handleBackNavigation = (event) => {
-      event.preventDefault();
-      router.push('/'); // Redirect to home page on back navigation
-    };
+      event.preventDefault()
+      router.push("/")
+    }
 
-    // Listen for back navigation
-    window.addEventListener('popstate', handleBackNavigation);
+    window.addEventListener("popstate", handleBackNavigation)
 
-    // Cleanup listener on component unmount
     return () => {
-      window.removeEventListener('popstate', handleBackNavigation);
-    };
-  }, [currentQuiz, router]);
+      window.removeEventListener("popstate", handleBackNavigation)
+    }
+  }, [currentQuiz, router])
 
   useEffect(() => {
     if (timeLeft > 0 && !showAnswers) {
       const timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(timer);
+        setTimeLeft((prev) => prev - 1)
+      }, 1000)
+      return () => clearInterval(timer)
     } else if (timeLeft === 0) {
-      handleSubmit(); // Auto-submit when time is up
+      handleSubmit()
     }
-  }, [timeLeft, showAnswers]);
+  }, [timeLeft, showAnswers])
 
   const handleChange = (question, value) => {
-    setUserAnswers((prev) => ({ ...prev, [question]: value }));
-  };
+    setUserAnswers((prev) => ({ ...prev, [question]: value }))
+  }
 
   const handleSubmit = async () => {
     try {
-      console.log('User Answers:', userAnswers);
-      setShowAnswers(true);
+      console.log("User Answers:", userAnswers)
+      setShowAnswers(true)
     } catch (error) {
-      console.error('Error submitting answers:', error);
-      setError('An error occurred while submitting your answers.');
-      router.push('/');
+      console.error("Error submitting answers:", error)
+      setError("An error occurred while submitting your answers.")
+      router.push("/")
     }
-  };
+  }
 
   if (!currentQuiz) {
-    return null; // Prevent rendering if currentQuiz is not available
+    return null
   }
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <Typography variant="h4" className="mb-4 text-white relative top-8">
-        {currentQuiz.quizName || 'Quiz'} {/* Display current quiz name */}
-      </Typography>
-      <div className="flex flex-col w-[70vw] bg-slate-300 p-6 rounded-md shadow-md relative top-10">
-        <Typography variant="h5" className="mb-4">Answer the Questions</Typography>
-
-        <Typography variant="h6" className="mb-4">
-          Time Left: {timeLeft} seconds
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <Typography variant="h3" className="text-white text-center mb-8 font-bold">
+          {currentQuiz.quizName || "Quiz"}
         </Typography>
-        
-        {error && (
-          <Typography variant="body1" className="text-red-600 mb-4">
-            {error}
-          </Typography>
-        )}
-
-        {currentQuiz.questionsAndAnswers.map((qa, index) => (
-          <div key={index} className="mb-4">
-            <Typography variant="body1" className="font-semibold">
-              {qa.question}
+        <div className="bg-white rounded-xl shadow-2xl p-6 md:p-8">
+          <div className="flex justify-between items-center mb-6">
+            <Typography variant="h5" className="text-gray-800 font-semibold">
+              Answer the Questions
             </Typography>
-            {!showAnswers ? (
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Type your answer here"
-                onChange={(e) => handleChange(qa.question, e.target.value)}
-                rows={2}
-              />
-            ) : (
-              <Typography variant="body2" className="mt-2">
-                Correct Answer: {qa.answer}
+            <div className="flex items-center text-gray-600 bg-blue-100 px-4 py-2 rounded-full">
+              <Clock className="w-5 h-5 mr-2 text-blue-600" />
+              <Typography variant="body1" className="font-medium">
+                Time Left: {timeLeft} seconds
               </Typography>
-            )}
+            </div>
           </div>
-        ))}
 
-        {!showAnswers && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-          >
-            Submit Answers
-          </Button>
-        )}
+          {error && (
+            <div className="flex items-center bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+              <AlertTriangle className="w-5 h-5 mr-2" />
+              <Typography variant="body1">{error}</Typography>
+            </div>
+          )}
+
+          {currentQuiz.questionsAndAnswers.map((qa, index) => (
+            <div key={index} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <Typography variant="body1" className="font-semibold text-gray-800 mb-2">
+                {index + 1}. {qa.question}
+              </Typography>
+              {!showAnswers ? (
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Type your answer here"
+                  onChange={(e) => handleChange(qa.question, e.target.value)}
+                  multiline
+                  rows={2}
+                  className="bg-white"
+                />
+              ) : (
+                <div className="mt-2 p-3 bg-green-50 rounded border border-green-200">
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2 mt-1" />
+                    <Typography variant="body2" className="text-gray-700">
+                      Correct Answer: {qa.answer}
+                    </Typography>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {!showAnswers && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              className="w-full py-3 mt-4 bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
+            >
+              Submit Answers
+            </Button>
+          )}
+        </div>
       </div>
     </div>
-  );
+  )
 }
+

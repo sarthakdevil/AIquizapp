@@ -1,57 +1,95 @@
-'use client';
-import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem } from '@mui/material';
-import { useRouter } from 'next/navigation';
-import MenuIcon from '@mui/icons-material/Menu';
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Menu } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 const Navbar = () => {
-  const router = useRouter();
-  const [anchorEl, setAnchorEl] = useState(null);
+  const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleNavigation = (path) => {
-    router.push(path);
-    setAnchorEl(null); // Close menu after navigation
-  };
-
-  const handleMenuClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+    router.push(path)
+    setIsMenuOpen(false)
+  }
 
   return (
-    <AppBar position="static" className="bg-blue-800">
-      <Toolbar className="flex justify-between items-center">
-        <mark className=' bg-yellow-500 w-24 align-middle text-center rounded-md border border-dashed border-yellow-950'>
-        <Typography variant="h6" className="text-white cursor-pointer font-extrabold h" onClick={() => handleNavigation('/')}>
-          Quizify
-        </Typography>
-        </mark>
-        <div className="hidden md:flex space-x-4">
-          <Button color="inherit" onClick={() => handleNavigation('/')}>pdfify</Button>
-          <Button color="inherit" onClick={() => handleNavigation('/create')}>create quiz</Button>
-          <Button color="inherit" onClick={() => handleNavigation('/otherquiz')}>other quizzes</Button>
+    <nav className="bg-indigo-800 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <button
+                onClick={() => handleNavigation("/")}
+                className="bg-yellow-500 hover:bg-yellow-600 text-indigo-900 font-extrabold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105"
+              >
+                Quizify
+              </button>
+            </div>
+          </div>
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-4">
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
+                onClick={() => handleNavigation("/")}
+              >
+                pdfify
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
+                onClick={() => handleNavigation("/create")}
+              >
+                create quiz
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
+                onClick={() => handleNavigation("/otherquiz")}
+              >
+                other quizzes
+              </Button>
+            </div>
+          </div>
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-indigo-800">
+                <DropdownMenuItem
+                  onClick={() => handleNavigation("/")}
+                  className="text-white hover:bg-indigo-700 cursor-pointer"
+                >
+                  pdfify
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation("/create")}
+                  className="text-white hover:bg-indigo-700 cursor-pointer"
+                >
+                  create quiz
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation("/otherquiz")}
+                  className="text-white hover:bg-indigo-700 cursor-pointer"
+                >
+                  other quizzes
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
+      </div>
+    </nav>
+  )
+}
 
-        <div className="md:hidden">
-          <IconButton color="inherit" onClick={handleMenuClick}>
-            <MenuIcon />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem onClick={() => handleNavigation('/')}>pdfify</MenuItem>
-            <MenuItem onClick={() => handleNavigation('/create')}>create quiz</MenuItem>
-            <MenuItem onClick={() => handleNavigation('/questions')}>other quizzes</MenuItem>
-          </Menu>
-        </div>
-      </Toolbar>
-    </AppBar>
-  );
-};
+export default Navbar
 
-export default Navbar;
