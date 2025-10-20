@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Typography, Slider, TextField, Button, Alert } from "@mui/material"
+import { Typography, Slider, TextField, Button, Alert, Select, MenuItem, FormControl, InputLabel } from "@mui/material"
 import Navbar from "@/components/nav"
 import { useDispatch, useSelector } from "react-redux"
 import { createQuiz } from "@/redux/slices/questionslice"
@@ -13,7 +13,14 @@ const CreateManualQuiz = () => {
 
   const [quizName, setQuizName] = useState("")
   const [questionCount, setQuestionCount] = useState(1)
-  const [questionsAndAnswers, setQuestionsAndAnswers] = useState([{ question: "", answer: "" }])
+  const [questionsAndAnswers, setQuestionsAndAnswers] = useState([
+    { 
+      question: "", 
+      options: { A: "", B: "", C: "", D: "" }, 
+      correct_answer: "A",
+      answer: ""
+    }
+  ])
 
   const handleQuestionCountChange = (event, value) => {
     setQuestionCount(value)
@@ -21,7 +28,12 @@ const CreateManualQuiz = () => {
       const newQuestions = [...prev]
       if (value > newQuestions.length) {
         for (let i = newQuestions.length; i < value; i++) {
-          newQuestions.push({ question: "", answer: "" })
+          newQuestions.push({ 
+            question: "", 
+            options: { A: "", B: "", C: "", D: "" }, 
+            correct_answer: "A",
+            answer: ""
+          })
         }
       } else {
         newQuestions.splice(value)
@@ -32,7 +44,19 @@ const CreateManualQuiz = () => {
 
   const handleInputChange = (index, type, value) => {
     const updatedQuestions = [...questionsAndAnswers]
-    updatedQuestions[index][type] = value
+    if (type.startsWith('option_')) {
+      const optionKey = type.split('_')[1] // Gets A, B, C, or D
+      updatedQuestions[index].options[optionKey] = value
+      // Update the answer field when correct option changes
+      if (updatedQuestions[index].correct_answer === optionKey) {
+        updatedQuestions[index].answer = value
+      }
+    } else if (type === 'correct_answer') {
+      updatedQuestions[index].correct_answer = value
+      updatedQuestions[index].answer = updatedQuestions[index].options[value]
+    } else {
+      updatedQuestions[index][type] = value
+    }
     setQuestionsAndAnswers(updatedQuestions)
   }
 
@@ -87,13 +111,51 @@ const CreateManualQuiz = () => {
                 onChange={(e) => handleInputChange(index, "question", e.target.value)}
                 className="mb-3"
               />
-              <TextField
-                fullWidth
-                variant="outlined"
-                label="Answer"
-                value={qa.answer}
-                onChange={(e) => handleInputChange(index, "answer", e.target.value)}
-              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Option A"
+                  value={qa.options.A}
+                  onChange={(e) => handleInputChange(index, "option_A", e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Option B"
+                  value={qa.options.B}
+                  onChange={(e) => handleInputChange(index, "option_B", e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Option C"
+                  value={qa.options.C}
+                  onChange={(e) => handleInputChange(index, "option_C", e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Option D"
+                  value={qa.options.D}
+                  onChange={(e) => handleInputChange(index, "option_D", e.target.value)}
+                />
+              </div>
+              
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Correct Answer</InputLabel>
+                <Select
+                  value={qa.correct_answer}
+                  onChange={(e) => handleInputChange(index, "correct_answer", e.target.value)}
+                  label="Correct Answer"
+                >
+                  <MenuItem value="A">A: {qa.options.A || 'Option A'}</MenuItem>
+                  <MenuItem value="B">B: {qa.options.B || 'Option B'}</MenuItem>
+                  <MenuItem value="C">C: {qa.options.C || 'Option C'}</MenuItem>
+                  <MenuItem value="D">D: {qa.options.D || 'Option D'}</MenuItem>
+                </Select>
+              </FormControl>
             </div>
           ))}
 

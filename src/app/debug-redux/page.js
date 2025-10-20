@@ -10,7 +10,8 @@ export default function ReduxDebugPage() {
   const router = useRouter();
   
   // Get all Redux state data
-  const questionsData = useSelector((state) => state.upload?.questionsAndAnswers);
+  const questionsData = useSelector((state) => state.question?.currentQuiz);
+  const allQuizzes = useSelector((state) => state.question?.allQuizzes);
   const quizTime = useSelector((state) => state.upload?.quizTime);
   const quizName = useSelector((state) => state.upload?.quiz_name);
   const pdfData = useSelector((state) => state.upload?.pdfData);
@@ -62,16 +63,47 @@ export default function ReduxDebugPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div>
-                    <h4 className="font-semibold text-green-300 mb-2">Questions Data:</h4>
+                    <h4 className="font-semibold text-green-300 mb-2">Current Quiz Data:</h4>
                     <div className="bg-black/20 rounded p-3 text-sm font-mono">
                       {questionsData ? (
                         <div>
                           <p className="text-green-400">✓ Available</p>
-                          <p>Questions: {questionsData.questions_and_answers?.length || 0}</p>
-                          <p>Quiz Name: {questionsData.quiz_name || 'N/A'}</p>
+                          <p>Questions: {questionsData.questionsAndAnswers?.length || 0}</p>
+                          <p>Quiz Name: {questionsData.quizName || 'N/A'}</p>
+                          <p>Quiz Time: {questionsData.quizTime || 'N/A'}</p>
+                          {questionsData.questionsAndAnswers?.[0] && (
+                            <div className="mt-2 p-2 bg-white/10 rounded">
+                              <p className="text-xs text-blue-200">First Question Format:</p>
+                              <p className="text-xs">Question: {questionsData.questionsAndAnswers[0].question}</p>
+                              {questionsData.questionsAndAnswers[0].options && (
+                                <div className="text-xs text-purple-300">
+                                  <p>✓ Options: {typeof questionsData.questionsAndAnswers[0].options === 'object' ? 'Object format (A,B,C,D)' : 'Array format'}</p>
+                                  <p>✓ Correct: {questionsData.questionsAndAnswers[0].correct_answer}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <p className="text-red-400">❌ Not available</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-blue-300 mb-2">All Quizzes:</h4>
+                    <div className="bg-black/20 rounded p-3 text-sm">
+                      {allQuizzes && allQuizzes.length > 0 ? (
+                        <div>
+                          <p className="text-green-400">✓ {allQuizzes.length} quizzes loaded</p>
+                          {allQuizzes.slice(0, 2).map((quiz, idx) => (
+                            <div key={idx} className="mt-1 text-xs">
+                              <p>• {quiz.quizName} ({quiz.questionCount} questions)</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-red-400">❌ No quizzes loaded</p>
                       )}
                     </div>
                   </div>

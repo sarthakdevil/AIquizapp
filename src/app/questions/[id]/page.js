@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Typography from "@mui/material/Typography"
-import TextField from "@mui/material/TextField"
 import Button from "@mui/material/Button"
+import Radio from "@mui/material/Radio"
+import RadioGroup from "@mui/material/RadioGroup"
+import FormControlLabel from "@mui/material/FormControlLabel"
+import FormControl from "@mui/material/FormControl"
 import { useSelector } from "react-redux"
-import { Clock, CheckCircle, AlertTriangle } from "lucide-react"
+import { Clock, CheckCircle, XCircle, AlertTriangle } from "lucide-react"
 
 export default function Questions() {
   const router = useRouter()
@@ -15,12 +18,15 @@ export default function Questions() {
   const [error, setError] = useState(null)
   const [showAnswers, setShowAnswers] = useState(false)
   const [timeLeft, setTimeLeft] = useState(currentQuiz?.quizTime || 0)
+  const [score, setScore] = useState(0)
 
   useEffect(() => {
     if (!currentQuiz) {
       router.push("/")
     } else {
-      setTimeLeft(currentQuiz.quizTime)
+      // Handle quiz_time which can be a number or string like "No time specified"
+      const quizTime = typeof currentQuiz.quizTime === 'number' ? currentQuiz.quizTime : 0
+      setTimeLeft(quizTime)
     }
 
     const handleBackNavigation = (event) => {
@@ -36,23 +42,39 @@ export default function Questions() {
   }, [currentQuiz, router])
 
   useEffect(() => {
-    if (timeLeft > 0 && !showAnswers) {
+    // Only start timer if timeLeft > 0 and quiz has a numeric time limit
+    const hasTimeLimit = typeof currentQuiz?.quizTime === 'number' && currentQuiz.quizTime > 0
+    if (timeLeft > 0 && !showAnswers && hasTimeLimit) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => prev - 1)
       }, 1000)
       return () => clearInterval(timer)
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && hasTimeLimit) {
+      // Only auto-submit if there was actually a numeric time limit
       handleSubmit()
     }
-  }, [timeLeft, showAnswers])
+  }, [timeLeft, showAnswers, currentQuiz?.quizTime])
 
-  const handleChange = (question, value) => {
-    setUserAnswers((prev) => ({ ...prev, [question]: value }))
+  const handleChange = (questionIndex, selectedOption) => {
+    setUserAnswers((prev) => ({ ...prev, [questionIndex]: selectedOption }))
+  }
+
+  const calculateScore = () => {
+    let correctAnswers = 0
+    currentQuiz.questionsAndAnswers.forEach((qa, index) => {
+      if (userAnswers[index] === qa.correct_answer) {
+        correctAnswers++
+      }
+    })
+    setScore(correctAnswers)
+    return correctAnswers
   }
 
   const handleSubmit = async () => {
     try {
+      const finalScore = calculateScore()
       console.log("User Answers:", userAnswers)
+      console.log("Score:", finalScore, "/", currentQuiz.questionsAndAnswers.length)
       setShowAnswers(true)
     } catch (error) {
       console.error("Error submitting answers:", error)
@@ -76,10 +98,17 @@ export default function Questions() {
             <Typography variant="h5" className="text-gray-800 font-semibold">
               Answer the Questions
             </Typography>
-            <div className="flex items-center text-gray-600 bg-blue-100 px-4 py-2 rounded-full">
-              <Clock className="w-5 h-5 mr-2 text-blue-600" />
+            <div className={`flex items-center text-gray-600 px-4 py-2 rounded-full ${
+              typeof currentQuiz?.quizTime === 'number' && currentQuiz.quizTime > 0 ? 'bg-blue-100' : 'bg-green-100'
+            }`}>
+              <Clock className={`w-5 h-5 mr-2 ${
+                typeof currentQuiz?.quizTime === 'number' && currentQuiz.quizTime > 0 ? 'text-blue-600' : 'text-green-600'
+              }`} />
               <Typography variant="body1" className="font-medium">
-                Time Left: {timeLeft} seconds
+                {typeof currentQuiz?.quizTime === 'number' && currentQuiz.quizTime > 0
+                  ? `Time Left: ${timeLeft} seconds`
+                  : currentQuiz?.quizTime || "No time limit"
+                }
               </Typography>
             </div>
           </div>
@@ -91,35 +120,100 @@ export default function Questions() {
             </div>
           )}
 
-          {currentQuiz.questionsAndAnswers.map((qa, index) => (
-            <div key={index} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <Typography variant="body1" className="font-semibold text-gray-800 mb-2">
-                {index + 1}. {qa.question}
+          {showAnswers && (
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <Typography variant="h6" className="text-center text-blue-800 font-bold">
+                Quiz Results: {score} out of {currentQuiz.questionsAndAnswers.length} correct
               </Typography>
-              {!showAnswers ? (
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  placeholder="Type your answer here"
-                  onChange={(e) => handleChange(qa.question, e.target.value)}
-                  multiline
-                  rows={2}
-                  className="bg-white"
-                />
-              ) : (
-                <div className="mt-2 p-3 bg-green-50 rounded border border-green-200">
-                  <div className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2 mt-1" />
-                    <Typography variant="body2" className="text-gray-700">
-                      Correct Answer: {qa.answer}
-                    </Typography>
-                  </div>
-                </div>
-              )}
+              <Typography variant="body2" className="text-center text-gray-600">
+                Score: {Math.round((score / currentQuiz.questionsAndAnswers.length) * 100)}%
+              </Typography>
             </div>
-          ))}
+          )}
 
-          {!showAnswers && (
+          {currentQuiz.questionsAndAnswers.map((qa, index) => {
+            const userAnswer = userAnswers[index]
+            const isCorrect = userAnswer === qa.correct_answer
+            const hasAnswered = userAnswer !== undefined
+
+            return (
+              <div key={index} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <Typography variant="body1" className="font-semibold text-gray-800 mb-4">
+                  {index + 1}. {qa.question}
+                </Typography>
+                
+                {!showAnswers ? (
+                  <FormControl component="fieldset" className="w-full">
+                    <RadioGroup
+                      value={userAnswer || ""}
+                      onChange={(e) => handleChange(index, e.target.value)}
+                    >
+                      {qa.options && Object.entries(qa.options).map(([optionLetter, optionText]) => {
+                        return (
+                          <FormControlLabel
+                            key={optionLetter}
+                            value={optionLetter}
+                            control={<Radio color="primary" />}
+                            label={`${optionLetter}. ${optionText}`}
+                            className="mb-2 ml-0"
+                            sx={{
+                              '& .MuiFormControlLabel-label': {
+                                fontSize: '0.95rem',
+                                color: '#374151'
+                              }
+                            }}
+                          />
+                        )
+                      })}
+                    </RadioGroup>
+                  </FormControl>
+                ) : (
+                  <div className="space-y-2">
+                    {qa.options && Object.entries(qa.options).map(([optionLetter, optionText]) => {
+                      const isThisCorrect = optionLetter === qa.correct_answer
+                      const isUserChoice = optionLetter === userAnswer
+                      
+                      let bgColor = "bg-gray-100"
+                      let textColor = "text-gray-700"
+                      let icon = null
+                      
+                      if (isThisCorrect) {
+                        bgColor = "bg-green-100 border-green-300"
+                        textColor = "text-green-800"
+                        icon = <CheckCircle className="w-5 h-5 text-green-500" />
+                      } else if (isUserChoice && !isThisCorrect) {
+                        bgColor = "bg-red-100 border-red-300"
+                        textColor = "text-red-800"
+                        icon = <XCircle className="w-5 h-5 text-red-500" />
+                      }
+                      
+                      return (
+                        <div
+                          key={optionLetter}
+                          className={`p-3 rounded border ${bgColor} ${textColor} flex items-start`}
+                        >
+                          {icon && <div className="mr-2 mt-0.5">{icon}</div>}
+                          <Typography variant="body2" className="flex-1">
+                            {optionLetter}. {optionText}
+                          </Typography>
+                        </div>
+                      )
+                    })}
+                    
+                    {!hasAnswered && (
+                      <div className="p-3 bg-yellow-50 border border-yellow-300 rounded">
+                        <Typography variant="body2" className="text-yellow-800">
+                          No answer selected
+                        </Typography>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {!showAnswers ? (
             <Button
               variant="contained"
               color="primary"
@@ -128,6 +222,24 @@ export default function Questions() {
             >
               Submit Answers
             </Button>
+          ) : (
+            <div className="mt-6 flex flex-col gap-3">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => router.push("/")}
+                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300"
+              >
+                Back to Home
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => router.push("/select")}
+                className="w-full py-3 border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors duration-300"
+              >
+                Take Another Quiz
+              </Button>
+            </div>
           )}
         </div>
       </div>

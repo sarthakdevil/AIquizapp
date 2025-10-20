@@ -27,7 +27,7 @@ export default function Requirements({ onChange }) {
 
   useEffect(() => {
     if (questionsAndAnswers) {
-      router.push("/questions")
+      router.push("/quiz-ready")
     }
   }, [questionsAndAnswers, router])
 
