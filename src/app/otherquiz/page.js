@@ -28,7 +28,12 @@ const QuizNamesPage = () => {
     setSearchTerm(term.toLowerCase())
   }
 
-  const filteredQuizzes = allQuizzes.filter((quiz) => quiz.quizName.toLowerCase().includes(searchTerm))
+  const filteredQuizzes = allQuizzes.filter((quiz) => 
+    quiz.quizName && quiz.quizName.toLowerCase().includes(searchTerm)
+  )
+
+  console.log('OtherQuiz: All quizzes:', allQuizzes);
+  console.log('OtherQuiz: Filtered quizzes:', filteredQuizzes);
 
   if (loading) {
     return (
@@ -50,6 +55,22 @@ const QuizNamesPage = () => {
     )
   }
 
+  if (!loading && allQuizzes.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-indigo-700">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold text-white text-center mb-8">All Quizzes</h1>
+          <Card className="w-full max-w-md mx-auto">
+            <CardContent className="text-center py-8">
+              <p className="text-gray-600">No quizzes available. Create one first!</p>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-indigo-700">
       <Navbar />
@@ -62,17 +83,24 @@ const QuizNamesPage = () => {
           {filteredQuizzes.map((quiz) => (
             <Card key={quiz.id} className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-indigo-700">{quiz.quizName}</CardTitle>
+                <CardTitle className="text-xl font-semibold text-indigo-700">
+                  {quiz.quizName || 'Unnamed Quiz'}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Time: {quiz.quizTime} seconds</p>
+                <p className="text-gray-600">
+                  Questions: {quiz.questionCount || 0}
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Created: {quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : 'Unknown'}
+                </p>
               </CardContent>
               <CardFooter>
                 <Button
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
                   onClick={() => handleStartQuiz(quiz.id)}
                 >
-                  Play Quiz
+                  Start Quiz ({quiz.questionCount || 0} questions)
                 </Button>
               </CardFooter>
             </Card>

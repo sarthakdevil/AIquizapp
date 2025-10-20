@@ -55,17 +55,84 @@ export const {
 export const fetchQuizzes = () => async (dispatch) => {
   dispatch(startLoading());
   try {
-    const response = await api.get("/quizzes"); // Adjust your API endpoint
+    const response = await api.get("/quizzes"); // Fetch from /api/quizzes
+    console.log('Redux: Raw API response:', response.data);
+    
+    // Normalize quizzes: ensure each question has MCQ options and a correct_answer (A-D)
+    const normalizeQuiz = (quiz) => {
+      const qas = Array.isArray(quiz.questions_and_answers) ? quiz.questions_and_answers : [];
+
+      // Collect existing answers to use as plausible distractors
+      const existingAnswers = qas.map(q => q.answer).filter(Boolean);
+
+      const normalizedQAs = qas.map((q, idx) => {
+        // If options already present and valid, keep them
+        if (Array.isArray(q.options) && q.options.length === 4 && q.correct_answer) {
+          return q;
+        }
+
+        // Build options: include the correct answer then try to pick 3 distractors
+        const correct = q.answer || q.correct_answer || '';
+        const options = [];
+
+        // Use correct answer as one option
+        options.push(correct);
+
+        // Add distractors from other existing answers in quiz
+        for (let a of existingAnswers) {
+          if (options.length >= 4) break;
+          if (!a) continue;
+          if (a === correct) continue;
+          if (!options.includes(a)) options.push(a);
+        }
+
+        // If still missing, add generic placeholders based on question index
+        const genericDistractors = ['Option X', 'Option Y', 'Option Z', 'None'];
+        let gi = 0;
+        while (options.length < 4) {
+          const cand = genericDistractors[gi % genericDistractors.length] + (gi > 0 ? ` ${gi}` : '');
+          if (!options.includes(cand)) options.push(cand);
+          gi++;
+        }
+
+        // Shuffle options to avoid always placing correct first
+        for (let i = options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [options[i], options[j]] = [options[j], options[i]];
+        }
+
+        // Determine correct_answer letter (A-D)
+        const correctIndex = options.findIndex(o => o === correct);
+        const correctLetter = correctIndex >= 0 ? String.fromCharCode(65 + correctIndex) : 'A';
+
+        return {
+          question: q.question || `Question ${idx + 1}`,
+          options,
+          correct_answer: correctLetter,
+          answer: options[correctIndex >= 0 ? correctIndex : 0]
+        };
+      });
+
+      return {
+        ...quiz,
+        questions_and_answers: normalizedQAs
+      };
+    };
+
     const quizzes = response.data.map((quiz) => ({
-      id: quiz._id, // MongoDB ObjectID
-      pdfName: quiz.pdf_name,
+      id: quiz._id,
       quizName: quiz.quiz_name,
-      quizTime: quiz.quiz_time,
-      questionsAndAnswers: quiz.questions_and_answers.questions_and_answers, // Array of question-answer pairs
+      questionsAndAnswers: normalizeQuiz(quiz).questions_and_answers,
+      questionCount: normalizeQuiz(quiz).questions_and_answers.length,
+      createdAt: quiz.createdAt,
+      updatedAt: quiz.updatedAt
     }));
+    
+    console.log('Redux: Processed quizzes:', quizzes);
     dispatch(loadQuizzesSuccess(quizzes)); // Dispatch the full quizzes
     toast.success("Quizzes loaded successfully!");
   } catch (error) {
+    console.error('Redux: Error fetching quizzes:', error);
     const errorMessage = error.response?.data?.message || error.message || "Failed to load quizzes.";
     dispatch(loadQuizzesFailure(errorMessage));
     toast.error(errorMessage);

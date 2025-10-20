@@ -1,7 +1,7 @@
 
 import axios from "axios";
 
-const BASE_URL="https://a-iquizapp.vercel.app/api"
+const BASE_URL="/api"
 
 const axiosInstance = axios.create();
 

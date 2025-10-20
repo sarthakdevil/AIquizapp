@@ -1,15 +1,18 @@
 // src/app/api/questions/route.js
 import { NextResponse } from 'next/server';
-import { clientPromise } from '@/lib/mongodb'; // Adjust the path if necessary
+import connectDB from '@/lib/mongodb';
+import Quiz from '@/models/Quiz';
 
 export async function GET(req) {
   try {
-    const client = await clientPromise;
-    const database = client.db('question_db'); // Replace with your database name
-    const collection = database.collection('questions'); // Replace with your collection name
-
-    const questions = await collection.find({}).toArray(); // Fetch all questions
-    console.log(questions)
+    await connectDB();
+    console.log('Connected to DB, fetching from questions collection...');
+    console.log('Quiz model collection name:', Quiz.collection.name);
+    
+    const questions = await Quiz.find({}).lean(); // Fetch all quizzes using Mongoose
+    console.log('Found questions:', questions.length);
+    console.log('Questions data:', questions);
+    
     return NextResponse.json(questions, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch questions:", error);

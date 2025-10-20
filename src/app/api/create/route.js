@@ -1,30 +1,31 @@
-import { clientPromise } from '@/lib/mongodb'; // MongoDB client
+import connectDB from '@/lib/mongodb';
+import Quiz from '@/models/Quiz';
 
 export async function POST(req) {
   try {
     // Connect to the database
-    const client = await clientPromise;
-    const database = client.db('question_db'); // Replace with your database name
-    const collection = database.collection('questions'); // Replace with your collection name
+    await connectDB();
 
     // Get data from the request
     const { quizName, questionsAndAnswers } = await req.json();
 
-    // Create the quiz document
-    const newQuiz = {
+    // Create the quiz document using Mongoose model
+    const newQuiz = new Quiz({
       quiz_name: quizName,
       questions_and_answers: questionsAndAnswers.map((qa) => ({
         question: qa.question,
         answer: qa.answer,
+        options: qa.options, // Support MCQ options
+        correct_answer: qa.correct_answer // Support MCQ correct answer
       })),
-    };
+    });
 
-    // Insert the new quiz into the 'questions' collection
-    const result = await collection.insertOne(newQuiz);
+    // Save the quiz
+    const result = await newQuiz.save();
 
     // Return success response with quizId
     return new Response(
-      JSON.stringify({ quizId: result.insertedId }), // MongoDB generates the inserted _id
+      JSON.stringify({ quizId: result._id }), // Mongoose returns _id
       {
         status: 201,
         headers: { 'Content-Type': 'application/json' },

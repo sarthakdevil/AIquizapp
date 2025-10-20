@@ -49,9 +49,37 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
+                onClick={() => handleNavigation("/multiplayer")}
+              >
+                multiplayer
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
                 onClick={() => handleNavigation("/otherquiz")}
               >
                 other quizzes
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
+                onClick={() => handleNavigation("/question-test")}
+              >
+                question test
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
+                onClick={() => handleNavigation("/mcq-test")}
+              >
+                mcq test
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
+                onClick={() => handleNavigation("/debug-redux")}
+              >
+                debug
               </Button>
             </div>
           </div>
@@ -77,10 +105,34 @@ const Navbar = () => {
                   create quiz
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  onClick={() => handleNavigation("/multiplayer")}
+                  className="text-white hover:bg-indigo-700 cursor-pointer"
+                >
+                  multiplayer
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => handleNavigation("/otherquiz")}
                   className="text-white hover:bg-indigo-700 cursor-pointer"
                 >
                   other quizzes
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation("/question-test")}
+                  className="text-white hover:bg-indigo-700 cursor-pointer"
+                >
+                  question test
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation("/mcq-test")}
+                  className="text-white hover:bg-indigo-700 cursor-pointer"
+                >
+                  mcq test
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation("/debug-redux")}
+                  className="text-white hover:bg-indigo-700 cursor-pointer"
+                >
+                  debug
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
