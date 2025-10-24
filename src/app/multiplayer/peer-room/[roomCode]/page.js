@@ -42,6 +42,7 @@ export default function PeerRoomPage({ params }) {
     questionIndex,
     playerScores,
     quiz,
+    connectionQuality,
     connectToPeer,
     startGame,
     submitAnswer,
@@ -285,7 +286,7 @@ export default function PeerRoomPage({ params }) {
             {/* Progression Status */}
             {progressionStatus && (
               <div className="text-center mb-4">
-                <Badge variant="secondary" className="bg-yellow-600/20 text-yellow-200">
+                <Badge variant="secondary" className="bg-yellow-600/20 text-yellow-200 animate-pulse">
                   {progressionStatus}
                 </Badge>
               </div>
@@ -295,6 +296,15 @@ export default function PeerRoomPage({ params }) {
               <div className="text-center mb-4">
                 <Badge variant="secondary" className="bg-blue-600/20 text-blue-200">
                   Loading next question...
+                </Badge>
+              </div>
+            )}
+
+            {/* Connection Quality Warning */}
+            {connectionQuality === 'poor' && (
+              <div className="text-center mb-4">
+                <Badge variant="destructive" className="animate-pulse">
+                  Poor connection - answers may be delayed
                 </Badge>
               </div>
             )}
@@ -407,8 +417,27 @@ export default function PeerRoomPage({ params }) {
             {isHost ? '🎮 Host Battle Room' : '⚔️ Join Battle'}
           </h1>
           <div className="flex items-center justify-center gap-2 text-blue-200">
-            {connected ? <Wifi className="w-5 h-5" /> : <WifiOff className="w-5 h-5" />}
-            <span>{connected ? 'Connected' : 'Connecting...'}</span>
+            {connected ? (
+              <>
+                {connectionQuality === 'good' && <Wifi className="w-5 h-5 text-green-400" />}
+                {connectionQuality === 'fair' && <Wifi className="w-5 h-5 text-yellow-400" />}
+                {connectionQuality === 'poor' && <WifiOff className="w-5 h-5 text-red-400" />}
+                <span className={
+                  connectionQuality === 'good' ? 'text-green-400' :
+                  connectionQuality === 'fair' ? 'text-yellow-400' :
+                  connectionQuality === 'poor' ? 'text-red-400' : 'text-blue-200'
+                }>
+                  {connectionQuality === 'good' ? 'Excellent' :
+                   connectionQuality === 'fair' ? 'Good' :
+                   connectionQuality === 'poor' ? 'Poor' : 'Connecting...'}
+                </span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-5 h-5" />
+                <span>Disconnected</span>
+              </>
+            )}
           </div>
         </div>
 
