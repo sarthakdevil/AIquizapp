@@ -1,7 +1,7 @@
 
 import axios from "axios";
 
-const BASE_URL="http://localhost:8000"
+const BASE_URL="https://ai-storybot.onrender.com"
 
 const axiosInstance = axios.create();
 
