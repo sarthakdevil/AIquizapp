@@ -43,6 +43,7 @@ export default function PeerRoomPage({ params }) {
     playerScores,
     quiz,
     connectionQuality,
+    progressionStatus,
     connectToPeer,
     startGame,
     submitAnswer,
@@ -59,7 +60,7 @@ export default function PeerRoomPage({ params }) {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [questionLoading, setQuestionLoading] = useState(false);
-  const [progressionStatus, setProgressionStatus] = useState('');
+  const [progressionCountdown, setProgressionCountdown] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [timerStartTime, setTimerStartTime] = useState(null);
 
@@ -172,14 +173,26 @@ export default function PeerRoomPage({ params }) {
     }
   }, [currentQuestion, questionIndex, isVisible]);
 
-  // Listen for progression status updates
+  // Handle progression countdown timer
   useEffect(() => {
-    if (hasAnswered && !isHost) {
-      setProgressionStatus('Waiting for opponent...');
-    } else if (hasAnswered && isHost) {
-      setProgressionStatus('Waiting for opponent to answer...');
+    if (progressionCountdown > 0) {
+      const timer = setTimeout(() => {
+        setProgressionCountdown(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (progressionCountdown === 0 && progressionStatus.includes('Next question in')) {
+      setProgressionCountdown(0); // Reset countdown when done
     }
-  }, [hasAnswered, isHost]);
+  }, [progressionCountdown, progressionStatus]);
+
+  // Listen for progression status messages from PeerContext
+  useEffect(() => {
+    // This effect will run when progression status changes
+    // We'll handle the countdown start when we receive the progression-status message
+    if (progressionStatus === 'Next question in 5s...') {
+      setProgressionCountdown(5);
+    }
+  }, [progressionStatus]);
 
   // Handle page visibility changes
   useEffect(() => {
@@ -288,6 +301,11 @@ export default function PeerRoomPage({ params }) {
               <div className="text-center mb-4">
                 <Badge variant="secondary" className="bg-yellow-600/20 text-yellow-200 animate-pulse">
                   {progressionStatus}
+                  {progressionCountdown > 0 && (
+                    <span className="ml-2 font-bold text-yellow-300">
+                      ({progressionCountdown}s)
+                    </span>
+                  )}
                 </Badge>
               </div>
             )}

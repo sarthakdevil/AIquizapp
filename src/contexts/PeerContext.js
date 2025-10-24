@@ -30,6 +30,7 @@ export const PeerProvider = ({ children }) => {
   const [pendingMessages, setPendingMessages] = useState(new Map()); // Track message acknowledgments
   const [messageSequence, setMessageSequence] = useState(0);
   const [lastHeartbeat, setLastHeartbeat] = useState(Date.now());
+  const [progressionStatus, setProgressionStatus] = useState('');
 
   // Handle question progression when both players have answered
   useEffect(() => {
@@ -54,9 +55,10 @@ export const PeerProvider = ({ children }) => {
           type: 'progression-status',
           payload: {
             status: 'both-answered',
-            nextIn: 3000,
+            nextIn: 5000, // Increased to 5 seconds for better sync
             currentScores: playerScores,
-            questionIndex
+            questionIndex,
+            countdownText: 'Next question in 5s...'
           },
           sequenceId,
           timestamp: Date.now()
@@ -82,6 +84,9 @@ export const PeerProvider = ({ children }) => {
           setQuestionIndex(nextIndex);
           setCurrentQuestion(quiz.questions_and_answers[nextIndex]);
           setAnswersReceived({ host: false, guest: false });
+
+          // Clear progression status for new question
+          setProgressionStatus('');
 
           // Send message to peer with synced scores
           if (connection && connected) {
@@ -138,7 +143,8 @@ export const PeerProvider = ({ children }) => {
             console.log('Sent message:', message);
           }
         }
-      }, 3000 + syncBuffer); // Add sync buffer based on connection quality      return () => clearTimeout(timer);
+      }, 5000 + syncBuffer); // Increased from 3000 to 5000ms for better sync
+      return () => clearTimeout(timer);
     }
   }, [answersReceived, isHost, gameState, questionIndex, quiz, connection, connected, playerScores, messageSequence, syncBuffer]);
 
@@ -360,14 +366,19 @@ export const PeerProvider = ({ children }) => {
         break;
 
       case 'progression-status':
-        const { status, nextIn, currentScores, questionIndex: statusQuestionIndex } = payload;
-        console.log('PeerContext: Received progression status', { status, nextIn, currentScores, statusQuestionIndex });
+        const { status, nextIn, currentScores, questionIndex: statusQuestionIndex, countdownText } = payload;
+        console.log('PeerContext: Received progression status', { status, nextIn, currentScores, statusQuestionIndex, countdownText });
 
         // Only process if it's for the current question
         if (statusQuestionIndex === questionIndex) {
           // Sync scores during progression
           if (currentScores) {
             setPlayerScores(currentScores);
+          }
+          
+          // Set progression status for UI display
+          if (countdownText) {
+            setProgressionStatus(countdownText);
           }
         }
         break;
@@ -382,6 +393,7 @@ export const PeerProvider = ({ children }) => {
         }
 
         setGameState('finished');
+        setProgressionStatus('');
         break;
 
       case 'heartbeat':
@@ -570,6 +582,7 @@ export const PeerProvider = ({ children }) => {
     quiz,
     messages,
     connectionQuality,
+    progressionStatus,
     connectToPeer,
     startGame,
     submitAnswer,

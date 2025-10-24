@@ -35,7 +35,7 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 className="text-white hover:bg-indigo-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300 ease-in-out"
-                onClick={() => handleNavigation("/")}
+                onClick={() => handleNavigation("/quizify")}
               >
                 pdfify
               </Button>
@@ -72,7 +72,7 @@ const Navbar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-indigo-800">
                 <DropdownMenuItem
-                  onClick={() => handleNavigation("/")}
+                  onClick={() => handleNavigation("/quizify")}
                   className="text-white hover:bg-indigo-700 cursor-pointer"
                 >
                   pdfify
